@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: -Pronostico 5 dias / cada 3 horas
 struct ForecastData: Codable {
-    let lists: [ForecastItem]
+    let list: [ForecastItem]
     let city: ForecastCity
 }
 

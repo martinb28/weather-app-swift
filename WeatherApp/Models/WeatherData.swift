@@ -46,3 +46,20 @@ struct Sys: Codable {
     let sunrise: TimeInterval
     let sunset: TimeInterval
 }
+
+// MARK: - Geocoding (sugerencias de ciudades)
+struct GeocodingResult: Codable, Identifiable {
+    let name: String
+    let lat: Double
+    let lon: Double
+    let country: String
+    let state: String?
+    
+    var id: String { "\(lat)-\(lon)" }
+    
+    var displayName: String {
+        [name, state, country]
+            .compactMap { $0 }
+            .joined(separator: ", ")
+    }
+}

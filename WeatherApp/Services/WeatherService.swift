@@ -48,4 +48,11 @@ class WeatherService {
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
     }
+    
+    // MARK: - Búsqueda de ciudades (Geocoding)
+    func searchCities(query: String) async throws -> [GeocodingResult] {
+        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        let urlString = "https://api.openweathermap.org/geo/1.0/direct?q=\(encoded)&limit=5&appid=\(apiKey)"
+        return try await fetch(urlString: urlString)
+    }
 }

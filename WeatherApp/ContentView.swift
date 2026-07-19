@@ -24,7 +24,7 @@ struct ContentView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
+            .animation(.easeInOut(duration: 1.5), value: viewModel.weather?.name)
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     HeaderView(showSearch: $showSearch)
@@ -37,8 +37,11 @@ struct ContentView: View {
                             .padding(.top, 80)
                     } else if viewModel.weather != nil {
                         CurrentWeatherView()
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         HourlyForecastView()
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                         DailyForecastView()
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                     } else {
                         WelcomeView()
                             .padding(.top, 80)

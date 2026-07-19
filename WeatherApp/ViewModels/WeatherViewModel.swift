@@ -95,6 +95,26 @@ class WeatherViewModel: NSObject, ObservableObject {
     var iconURL: URL? {
         URL(string:"https://openweathermap.org/img/wn/\(iconCode)@2x.png")
     }
+    
+    var sunriseString: String {
+        guard let sunrise = weather?.sys.sunrise else { return "--" }
+        return Date.from(timeInterval: sunrise).hourString
+    }
+
+    var sunsetString: String {
+        guard let sunset = weather?.sys.sunset else { return "--" }
+        return Date.from(timeInterval: sunset).hourString
+    }
+
+    var visibilityString: String {
+        guard let visibility = weather?.visibility else { return "--" }
+        return "\(visibility / 1000) km"
+    }
+
+    var pressureString: String {
+        guard let pressure = weather?.main.pressure else { return "--" }
+        return "\(pressure) hPa"
+    }
 }
 
 // MARK: - CLLocationManagerDelegate

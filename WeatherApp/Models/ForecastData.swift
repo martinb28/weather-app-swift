@@ -1,22 +1,25 @@
-//  ForecastData.swift
+// ForecastData.swift
 import Foundation
 
-// MARK: -Pronostico 5 dias / cada 3 horas
+// MARK: - Pronóstico 5 días / cada 3 horas
 struct ForecastData: Codable {
     let list: [ForecastItem]
     let city: ForecastCity
 }
 
 struct ForecastItem: Codable, Identifiable {
-    var id = UUID()
-    let dt: TimeInterval //timestamp de la hora
+    let dt: TimeInterval
     let main: MainWeather
     let weather: [WeatherInfo]
     let wind: Wind
-    let dtTxt: String //fecha en texto "2026-07-18 00:00:00"
-    
+    let pop: Double?
+    let dtTxt: String
+
+    // Identifiable usando dt (es único por item)
+    var id: TimeInterval { dt }
+
     enum CodingKeys: String, CodingKey {
-        case dt, main, weather, wind
+        case dt, main, weather, wind, pop
         case dtTxt = "dt_txt"
     }
 }

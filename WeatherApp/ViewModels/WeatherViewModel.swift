@@ -19,6 +19,8 @@ class WeatherViewModel: NSObject, ObservableObject {
     private let service = WeatherService()
     private let locationManager = CLLocationManager()
     private var searchTask: Task<Void, Never>?
+    private var lastLatitude: Double?
+    private var lastLongitude: Double?
     
     // MARK: - Init
     override init() {
@@ -35,26 +37,34 @@ class WeatherViewModel: NSObject, ObservableObject {
     // MARK: - Buscar clima por ciudad
     func searchCity() async {
         guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        
         isLoading = true
         errorMessage = nil
-        
+
         do {
-            async let weatherResult = service.fetchWeather(city: searchText)
-            async let forecastResult = service.fetchForecast(city: searchText)
-            
-            let (weatherData, forecastData) = try await (weatherResult, forecastResult)
-            weather = weatherData
-            forecast = forecastData
+            // Primero obtenemos coordenadas por nombre para guardarlas
+            let geoResults = try await service.searchCities(query: searchText)
+            if let first = geoResults.first {
+                lastLatitude = first.lat
+                lastLongitude = first.lon
+                // Buscamos por coordenadas (más preciso)
+                async let weatherResult = service.fetchWeather(lat: first.lat, lon: first.lon)
+                async let forecastResult = service.fetchForecast(lat: first.lat, lon: first.lon)
+                let (weatherData, forecastData) = try await (weatherResult, forecastResult)
+                weather = weatherData
+                forecast = forecastData
+            } else {
+                errorMessage = "No se encontro la ciudad. Verifica el nombre e intenta de nuevo."
+            }
         } catch {
-            errorMessage = "no se encontro la ciudad. Verifica el nombre e intenta de nuevo."
+            errorMessage = "No se encontro la ciudad. Verifica el nombre e intenta de nuevo."
         }
-        
         isLoading = false
     }
     
     // MARK: - Buscar clima por coordenadas
     func fetchWeather(lat: Double, lon: Double) async {
+        lastLatitude = lat
+        lastLongitude = lon
         isLoading = true
         errorMessage = nil
         
@@ -66,7 +76,7 @@ class WeatherViewModel: NSObject, ObservableObject {
             weather = weatherData
             forecast = forecastData
         } catch {
-            errorMessage = "no se pudo obtener el clima. Verifica tu conexion."
+            errorMessage = "No se pudo obtener el clima. Verifica tu conexion."
         }
         
         isLoading = false
@@ -165,6 +175,8 @@ extension WeatherViewModel: CLLocationManagerDelegate {
 
     // MARK: - Seleccionar una sugerencia (busca por coordenadas, más preciso)
     func selectSuggestion(_ result: GeocodingResult) async {
+        lastLatitude = result.lat
+        lastLongitude = result.lon
         isLoading = true
         errorMessage = nil
         suggestions = []
@@ -178,5 +190,26 @@ extension WeatherViewModel: CLLocationManagerDelegate {
             errorMessage = "No se pudo obtener el clima. Verificá tu conexión."
         }
         isLoading = false
+    }
+    
+    func refreshWeather() async {
+        errorMessage = nil
+        do {
+            if let lat = lastLatitude, let lon = lastLongitude {
+                async let weatherResult = service.fetchWeather(lat: lat, lon: lon)
+                async let forecastResult = service.fetchForecast(lat: lat, lon: lon)
+                let (weatherData, forecastData) = try await (weatherResult, forecastResult)
+                weather = weatherData
+                forecast = forecastData
+            } else if let cityName = weather?.name {
+                async let weatherResult = service.fetchWeather(city: cityName)
+                async let forecastResult = service.fetchForecast(city: cityName)
+                let (weatherData, forecastData) = try await (weatherResult, forecastResult)
+                weather = weatherData
+                forecast = forecastData
+            }
+        } catch {
+            // Fallo silencioso en el refresh — no mostramos error
+        }
     }
 }

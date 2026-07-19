@@ -68,14 +68,12 @@ struct DailyItemView: View {
                 .frame(width: 80, alignment: .leading)
             
             // Ícono del clima
-            AsyncImage(url: iconURL) { image in
-                image.resizable().scaledToFit()
-            } placeholder: {
-                Image(systemName: "cloud.fill")
-                    .resizable().scaledToFit()
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .frame(width: 32, height: 32)
+            Image(systemName: (item.weather.first?.icon ?? "01d").weatherSFSymbol)
+                .resizable()
+                .scaledToFit()
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, .white.opacity(0.6))
+                .frame(width: 28, height: 28)
             
             // Descripción
             Text(item.weather.first?.description.capitalized ?? "")

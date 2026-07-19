@@ -1,10 +1,4 @@
-//
-//  ContentView.swift
-//  WeatherApp
-//
-//  Created by Martin Bugao on 18/07/2026.
-//
-
+// ContentView.swift
 import SwiftUI
 
 struct ContentView: View {
@@ -12,12 +6,21 @@ struct ContentView: View {
     @State private var showSearch = false
     
     var backgroundColors: [Color] {
-        Color.weatherGradient(for: viewModel.weather?.weather.first?.description ?? "")
+        // Usamos 'main' (siempre en inglés) para el gradiente
+        let main = viewModel.weather?.weather.first?.main ?? ""
+        let isNight = viewModel.iconCode.hasSuffix("n")
+        return Color.weatherGradient(for: main, isNight: isNight)
+    }
+    
+    var condition: String {
+        // Usamos 'main' (siempre en inglés) para detectar la condición de forma confiable
+        // Ejemplos: "Snow", "Rain", "Clear", "Clouds", "Thunderstorm"
+        viewModel.weather?.weather.first?.main ?? ""
     }
     
     var body: some View {
         ZStack {
-            // Fondo degradado dinámico según el clima
+            // Fondo degradado dinámico
             LinearGradient(
                 colors: backgroundColors,
                 startPoint: .topLeading,
@@ -25,6 +28,10 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
             .animation(.easeInOut(duration: 1.5), value: viewModel.weather?.name)
+            
+            // Efecto climático animado (lluvia, nieve, tormenta)
+            WeatherEffectView(condition: condition)
+            
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     HeaderView(showSearch: $showSearch)
@@ -50,6 +57,9 @@ struct ContentView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
             }
+            .refreshable {
+                await viewModel.refreshWeather()
+            }
         }
         .sheet(isPresented: $showSearch) {
             SearchView()
@@ -58,5 +68,7 @@ struct ContentView: View {
         .onAppear {
             viewModel.requestLocation()
         }
+        // Haptic feedback al cambiar de ciudad
+        .sensoryFeedback(.impact(weight: .medium), trigger: viewModel.weather?.name)
     }
 }

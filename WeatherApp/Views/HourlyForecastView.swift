@@ -59,14 +59,12 @@ struct HourlyItemView: View {
                 .foregroundStyle(.white.opacity(isNow ? 1 : 0.7))
             
             // Ícono del clima
-            AsyncImage(url: iconURL) { image in
-                image.resizable().scaledToFit()
-            } placeholder: {
-                Image(systemName: "cloud.fill")
-                    .resizable().scaledToFit()
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .frame(width: 36, height: 36)
+            Image(systemName: (item.weather.first?.icon ?? "01d").weatherSFSymbol)
+                .resizable()
+                .scaledToFit()
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, .white.opacity(0.6))
+                .frame(width: 32, height: 32)
             
             // Temperatura
             Text("\(Int(item.main.temp))°")

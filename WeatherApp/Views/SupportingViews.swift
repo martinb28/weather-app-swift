@@ -5,6 +5,7 @@ import SwiftUI
 struct HeaderView: View {
     @EnvironmentObject var viewModel: WeatherViewModel
     @Binding var showSearch: Bool
+    @State private var isRefreshing = false
     
     var body: some View {
         HStack {
@@ -20,13 +21,41 @@ struct HeaderView: View {
                     .foregroundStyle(.white)
             }
             Spacer()
-            Button { showSearch = true } label: {
-                Image(systemName: "magnifyingglass")
-                    .font(.title2)
-                    .foregroundStyle(.white)
+            
+            HStack(spacing: 10) {
+                // Botón refresh con animación
+                Button {
+                    guard !isRefreshing else { return }
+                    Task {
+                        isRefreshing = true
+                        await viewModel.refreshWeather()
+                        isRefreshing = false
+                    }
+                } label: {
+                    Group {
+                        if isRefreshing {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title2)
+                                .foregroundStyle(.white)
+                        }
+                    }
                     .frame(width: 44, height: 44)
                     .background(.white.opacity(0.2))
                     .clipShape(Circle())
+                }
+                
+                // Botón búsqueda
+                Button { showSearch = true } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(.white.opacity(0.2))
+                        .clipShape(Circle())
+                }
             }
         }
         .padding(.top, 10)

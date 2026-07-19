@@ -9,14 +9,13 @@ struct CurrentWeatherView: View {
         VStack(spacing: 0) {
             
             // Ícono animado
-            AsyncImage(url: viewModel.iconURL) { image in
-                image.resizable().scaledToFit()
-            } placeholder: {
-                Image(systemName: "cloud.sun.fill")
-                    .resizable().scaledToFit()
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 130, height: 130)
+            Image(systemName: viewModel.iconCode.weatherSFSymbol)
+                .resizable()
+                .scaledToFit()
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, .white.opacity(0.7))
+                .frame(width: 120, height: 120)
+                .shadow(color: .white.opacity(0.3), radius: 10)
             .scaleEffect(appeared ? 1 : 0.5)
             .opacity(appeared ? 1 : 0)
             
